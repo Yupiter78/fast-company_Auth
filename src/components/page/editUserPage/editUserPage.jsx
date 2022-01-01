@@ -45,9 +45,6 @@ const validatorConfig = {
 const EditUserPage = () => {
     const { userId } = useParams();
     const { currentUser, update } = useAuth();
-    const [data, setData] = useState({ ...currentUser, password: "" });
-    console.log("data_start:", data);
-    const [errors, setErrors] = useState({});
 
     const { professions, isLoading: professionIsLoading } = useProfessions();
     const professionsList = professions.map((p) => ({
@@ -64,6 +61,13 @@ const EditUserPage = () => {
         label: q.name,
         value: q._id
     }));
+    const [data, setData] = useState({
+        ...currentUser,
+        password: "",
+        qualities: fillQualities(currentUser.qualities)
+    });
+    console.log("data_start:", data);
+    const [errors, setErrors] = useState({});
 
     const history = useHistory();
 
@@ -81,17 +85,17 @@ const EditUserPage = () => {
         validate();
     }, [data]);
 
+    function fillQualities(qualitiesId) {
+        const qualities = qualitiesId.map((q) => getQuality(q));
+        return qualities.map((q) => ({ label: q.name, value: q._id }));
+    }
+
     const fillData = (user) => {
         const newData = {
             ...data,
             qualities: fillQualities(user.qualities)
         };
         setData(newData);
-    };
-
-    const fillQualities = (qualitiesId) => {
-        const qualities = qualitiesId.map((q) => getQuality(q));
-        return qualities.map((q) => ({ label: q.name, value: q._id }));
     };
 
     const handleChange = (field) => {
