@@ -12,7 +12,6 @@ export const httpAuth = axios.create({
         key: process.env.REACT_APP_FIREBASE_KEY
     }
 });
-console.log("httpAuth:", httpAuth);
 
 const AuthContext = React.createContext();
 
@@ -23,7 +22,6 @@ const AuthProvider = ({ children }) => {
     const [error, setError] = useState(null);
 
     const history = useHistory();
-
     async function getUserData() {
         try {
             const { content } = await userService.getCurrentUser();
@@ -129,7 +127,6 @@ const AuthProvider = ({ children }) => {
                 password,
                 returnSecureToken: true
             });
-            console.log("data_update:", data);
 
             localStorageService.setToken(data);
 

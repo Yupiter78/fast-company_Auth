@@ -6,45 +6,27 @@ import TextField from "../../common/form/textField";
 import SelectField from "../../common/form/selectField";
 import RadioField from "../../common/form/radioField";
 import MultiSelectField from "../../common/form/multiSelectField";
-import CheckboxField from "../../common/form/checkboxField";
 import { useHistory, useParams } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 import { useProfessions } from "../../../hooks/useProfession";
 import { useQualities } from "../../../hooks/useQuality";
 
-const validatorConfig = {
-    name: {
-        isRequired: { message: "Имя обязательно для заполнения" }
-    },
-    email: {
-        isRequired: { message: "Электронная почта обязательна для заполнения" },
-        isEmail: { message: "Введите корректный email" }
-    },
-    password: {
-        isRequired: { message: "Пароль обязателен для заполнения" },
-        hasCapital: {
-            message: "Пароль должен содержать хотя бы одну заглавную букву"
-        },
-        hasNumber: { message: "Пароль должен содержать хотя бы одну цифру" },
-        min: {
-            message: "Пароль должен состоять из 8 и более символов",
-            value: 8
-        }
-    },
-    profession: {
-        isRequired: { message: "Профессию выбрать обязательно" }
-    },
-    license: {
-        isRequired: {
-            message:
-                "Вы не можете использовать наш сервис без подтверждения лицензионного соглашения"
-        }
-    }
-};
-
 const EditUserPage = () => {
     const { userId } = useParams();
     const { currentUser, update } = useAuth();
+    // const initialState = {
+    //     completedMeetings: 0,
+    //     email: "",
+    //     image: "",
+    //     licence: true,
+    //     name: "",
+    //     password: "",
+    //     profession: "",
+    //     qualities: [],
+    //     rate: 0,
+    //     sex: "",
+    //     _id: ""
+    // };
 
     const { professions, isLoading: professionIsLoading } = useProfessions();
     const professionsList = professions.map((p) => ({
@@ -61,12 +43,40 @@ const EditUserPage = () => {
         label: q.name,
         value: q._id
     }));
-    const [data, setData] = useState({
-        ...currentUser,
-        password: "",
-        qualities: fillQualities(currentUser.qualities)
-    });
-    console.log("data_start:", data);
+    const [data, setData] = useState();
+    const validatorConfig = {
+        name: {
+            isRequired: { message: "Имя обязательно для заполнения" }
+        },
+        email: {
+            isRequired: {
+                message: "Электронная почта обязательна для заполнения"
+            },
+            isEmail: { message: "Введите корректный email" }
+        },
+        password: {
+            isRequired: { message: "Пароль обязателен для заполнения" },
+            hasCapital: {
+                message: "Пароль должен содержать хотя бы одну заглавную букву"
+            },
+            hasNumber: {
+                message: "Пароль должен содержать хотя бы одну цифру"
+            },
+            min: {
+                message: "Пароль должен состоять из 8 и более символов",
+                value: 8
+            }
+        },
+        profession: {
+            isRequired: { message: "Профессию выбрать обязательно" }
+        },
+        license: {
+            isRequired: {
+                message:
+                    "Вы не можете использовать наш сервис без подтверждения лицензионного соглашения"
+            }
+        }
+    };
     const [errors, setErrors] = useState({});
 
     const history = useHistory();
@@ -77,7 +87,7 @@ const EditUserPage = () => {
 
     useEffect(() => {
         if (!professionIsLoading && !qualityIsLoading) {
-            fillData(currentUser);
+            loadingData(currentUser);
         }
     }, [professionIsLoading, qualityIsLoading]);
 
@@ -85,15 +95,16 @@ const EditUserPage = () => {
         validate();
     }, [data]);
 
-    function fillQualities(qualitiesId) {
+    function getQualitiesById(qualitiesId) {
         const qualities = qualitiesId.map((q) => getQuality(q));
         return qualities.map((q) => ({ label: q.name, value: q._id }));
     }
 
-    const fillData = (user) => {
+    const loadingData = (user) => {
         const newData = {
-            ...data,
-            qualities: fillQualities(user.qualities)
+            ...user,
+            password: "",
+            qualities: getQualitiesById(user.qualities)
         };
         setData(newData);
     };
@@ -199,14 +210,6 @@ const EditUserPage = () => {
                             onChange={handleChange}
                             label="Выберите качества"
                         />
-                        <CheckboxField
-                            value={data.license}
-                            onChange={handleChange}
-                            name="license"
-                            error={errors.license}
-                        >
-                            Подтвердить <a>лицензионное соглашение</a>
-                        </CheckboxField>
 
                         <button
                             type="submit"
